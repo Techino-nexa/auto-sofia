@@ -239,14 +239,10 @@ if __name__ == "__main__":
 
     INTERVALO_SEGUNDOS = 60
 
-    print(f"[{datetime.now()}] === AXL iniciado. Escutando a cada 5 minutos ===")
 
     while True:
         try:
-            print(f"\n[{datetime.now()}] === Novo ciclo de verificação ===")
-
             # ---- CAMINHO 1: Requisições manuais pendentes ----
-            print("Verificando requisições manuais pendentes...")
             pendentes = consultar_execucoes_pendentes()
 
             if pendentes:

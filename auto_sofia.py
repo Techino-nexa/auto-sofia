@@ -1,8 +1,6 @@
 # sistemas/auto_sofia.py
 import os
 import time
-import sys
-import django
 import undetected_chromedriver as uc
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
@@ -14,15 +12,15 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from datetime import datetime
 
-from pathlib import Path
+# from pathlib import Path
 
 def baixar_cte(per_inicial, per_final, cnpj, senha, cte_tomador=False, cte_emitente=False, download_dir=None, headless=False, usuario="cla0000"):
     
     erros = ""
     
     # Define diretório de download
-    if download_dir is None:
-        download_dir = getattr(settings, 'SOFIA_DOWNLOAD_DIR', os.path.join(settings.BASE_DIR, 'downloads', 'sofia'))
+    # if download_dir is None:
+        # download_dir = getattr(settings, 'SOFIA_DOWNLOAD_DIR', os.path.join(settings.BASE_DIR, 'downloads', 'sofia'))
     
     os.makedirs(download_dir, exist_ok=True)
     
@@ -358,23 +356,13 @@ def baixar_cte(per_inicial, per_final, cnpj, senha, cte_tomador=False, cte_emite
 
 def baixar_nfe(per_inicial, per_final, cnpj, senha, nfe_emitente=False, nfe_destinatario=False, download_dir=None, headless=False, usuario="cla0000"):
     
-    print(nfe_destinatario, nfe_emitente)
     erros = ""
-
-    # Define diretório de download
-    if download_dir is None:
-        download_dir = getattr(settings, 'SOFIA_DOWNLOAD_DIR', os.path.join(settings.BASE_DIR, 'downloads', 'sofia'))
-    
     os.makedirs(download_dir, exist_ok=True)
-    
-    print(f"[{datetime.now()}] NFE - Iniciando download para CNPJ: {cnpj}")
-    print(f"[{datetime.now()}] NFE - Período: {per_inicial} a {per_final}")
-    print(f"[{datetime.now()}] NFE - Emitente: {'Sim' if nfe_emitente else 'Não'} | Destinatário: {'Sim' if nfe_destinatario else 'Não'}")
     
     # Se nenhum foi marcado, não faz nada
     if not nfe_emitente and not nfe_destinatario:
-        print(f"[{datetime.now()}] NFE - Nenhum tipo de NFe selecionado. Pulando...")
         return ""
+    
     # --------------------------------------------------------------
     # FUNÇÕES AUXILIARES
     # --------------------------------------------------------------
@@ -476,7 +464,6 @@ def baixar_nfe(per_inicial, per_final, cnpj, senha, nfe_emitente=False, nfe_dest
             return "0"
 
     def download_emitente(driver):
-        print(f"[{datetime.now()}] NFE - Processando download Emitente")
         
         driver.switch_to.window(driver.window_handles[1])
         driver.refresh()
@@ -486,8 +473,6 @@ def baixar_nfe(per_inicial, per_final, cnpj, senha, nfe_emitente=False, nfe_dest
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable(("xpath", '/html/body/form/div/table/tbody/tr[3]/td[6]/a')))
         id_download = driver.find_element("xpath", '/html/body/form/div/table/tbody/tr[3]/td[6]/a').text
 
-        print(f"[{datetime.now()}] NFE - ID Download Emitente: {id_download}")
-
         verificador = click_refresh(driver, 1, id_download)
         
         if verificador == "ERRO":
@@ -495,13 +480,11 @@ def baixar_nfe(per_inicial, per_final, cnpj, senha, nfe_emitente=False, nfe_dest
         else:
             clicar_if(driver, '/html/body/form/div/table/tbody/tr[5]/td[3]/a')
             clicar_if(driver, '/html/body/table/tbody/tr[2]/td/form/table/tbody/tr[8]/td/a')
-            print(f"[{datetime.now()}] NFE - Download Emitente concluído")
         
         driver.switch_to.window(driver.window_handles[0])
         return ""
 
     def download_destinatario(driver):
-        print(f"[{datetime.now()}] NFE - Processando download Destinatário")
         
         driver.switch_to.window(driver.window_handles[1])
         driver.refresh()
@@ -510,8 +493,6 @@ def baixar_nfe(per_inicial, per_final, cnpj, senha, nfe_emitente=False, nfe_dest
 
         WebDriverWait(driver, 10).until( EC.element_to_be_clickable(("xpath", '/html/body/form/div/table/tbody/tr[3]/td[6]/a')))
         id_download = driver.find_element("xpath", '/html/body/form/div/table/tbody/tr[3]/td[6]/a').text
-
-        print(f"[{datetime.now()}] NFE - ID Download Destinatário: {id_download}")
 
         verificador = click_refresh(driver, 1, id_download)
         
@@ -603,8 +584,6 @@ def baixar_nfe(per_inicial, per_final, cnpj, senha, nfe_emitente=False, nfe_dest
         # --------------------------------------------------------------
         
         if nfe_emitente == True:
-            print(f"[{datetime.now()}] NFE - Iniciando busca Emitente")
-            
             preencher_formulario_base(driver)
 
             iframeemitente = driver.find_element("xpath", '/html/body/table/tbody/tr[2]/td/form/table/tbody/tr[7]/td/table/tbody/tr[2]/td/iframe')
@@ -639,7 +618,6 @@ def baixar_nfe(per_inicial, per_final, cnpj, senha, nfe_emitente=False, nfe_dest
         # --------------------------------------------------------------
         
         if nfe_destinatario == True:
-            print(f"[{datetime.now()}] NFE - Iniciando busca Destinatário")
             
             preencher_formulario_base(driver)
 
@@ -677,12 +655,9 @@ def baixar_nfe(per_inicial, per_final, cnpj, senha, nfe_emitente=False, nfe_dest
                 erros += "NFe Destinatário - Nenhum registro encontrado\n"
 
         time.sleep(6)
-        print(f"[{datetime.now()}] NFE - Aguardando downloads...")
-        print(f"[{datetime.now()}] NFE - Processo finalizado")
         
     except Exception as e:
         erro_msg = f"Erro crítico em baixar_nfe: {str(e)}"
-        print(f"[{datetime.now()}] NFE ERRO - {erro_msg}")
         erros += erro_msg + "\n"
         
     finally:
@@ -701,8 +676,9 @@ def baixar_nfce(per_inicial, per_final, cnpj, senha, download_dir=None, headless
     erros = ""
     
     # Define diretório de download
-    if download_dir is None:
-        download_dir = getattr(settings, 'SOFIA_DOWNLOAD_DIR', os.path.join(settings.BASE_DIR, 'downloads', 'sofia'))
+    # if download_dir is None:
+    
+        # download_dir = getattr(settings, 'SOFIA_DOWNLOAD_DIR', os.path.join(settings.BASE_DIR, 'downloads', 'sofia'))
     
     os.makedirs(download_dir, exist_ok=True)
     
@@ -989,7 +965,7 @@ def baixar_faturamento(per_inicial, per_final, cnpj, senha, download_dir=None, h
     erros = ""
     
     # Define diretório de download
-    if download_dir is None: download_dir = getattr(settings, 'SOFIA_DOWNLOAD_DIR', os.path.join(settings.BASE_DIR, 'downloads', 'sofia'))
+    # if download_dir is None: download_dir = getattr(settings, 'SOFIA_DOWNLOAD_DIR', os.path.join(settings.BASE_DIR, 'downloads', 'sofia'))
     
     os.makedirs(download_dir, exist_ok=True)
     
