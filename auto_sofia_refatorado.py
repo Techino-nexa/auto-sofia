@@ -24,6 +24,17 @@ senha = "fiscal022026"
 from datetime import date
 import calendar
 
+def criar_pastas():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    dir_path = os.path.join(base_dir, "DOWNLOADS PLACEHOLDER")
+    dir_relatorios = os.path.join(base_dir, "RELATORIOS")
+
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+    if not os.path.exists(dir_relatorios):
+        os.makedirs(dir_relatorios)
+
 def quebrar_por_mes(data_inicio, data_fim):
 
     data_inicio = datetime.strptime(data_inicio, "%d/%m/%Y").date()
@@ -628,7 +639,8 @@ def download_cte_emitente(dir_path,dict_infos):
 
 
 if __name__ == "__main__":
-
+    criar_pastas()
+    
     datas = (quebrar_por_mes("01/02/2020", "31/12/2025"))
 
     dict_relatorio = {
@@ -638,6 +650,13 @@ if __name__ == "__main__":
         "STATUS":[],
     }
 
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    dir_path = os.path.join(base_dir, "DOWNLOADS PLACEHOLDER")
+
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    dir_relatorios = os.path.join(base_dir, "RELATORIOS")
+
     for data in datas:
 
         dict_infos = {
@@ -646,16 +665,17 @@ if __name__ == "__main__":
             "data_final":data[1].replace("/",""),
             "certificado":True,
         }
-
-        resultado = download_nfe_emitente(fr"C:\PROJETOS\0 - PROJETOS NOVOS\API - SOFIA\DOWNLOADS PLACEHOLDER",dict_infos)
+        resultado = download_nfe_emitente(dir_path,dict_infos)
 
         dict_relatorio["PERIODO"].append(data[0])
         dict_relatorio["EMPRESA"].append("LOJAO")
         dict_relatorio["CNPJ"].append(dict_infos["cnpj"])
         dict_relatorio["STATUS"].append(resultado)
+
+
     
         df = pd.DataFrame(dict_relatorio)
-        df.to_excel(fr"C:\PROJETOS\0 - PROJETOS NOVOS\API - SOFIA\RELATORIOS\relatorio.xlsx", index=False)
+        df.to_excel(fr"{dir_relatorios}/relatorio.xlsx", index=False)
     
 
 
